@@ -1,5 +1,5 @@
 # Basic React Review
-In this app, we are going to set up a Harry Potter characters list. We will be able to view, add to, and delete from a list of characters' names, houses, and pictures. (Maybe add in favoriting functionality)
+In this app, we are going to set up a Harry Potter characters list. We will be able to view, add to, and delete from a list of characters' names, houses, and pictures. This application is serverless -- we are only using React state to handle data. 
 
 ## Setup
 - open up your terminal and ```cd``` into the folder that you want to save your react app in
@@ -205,7 +205,7 @@ export default Adder
         })
     }
 ```
-- And then we are going to add it as the function to be run in the event of an onChange to our inputs and select. You'll notice that the changeHandler is going to destructure "name" and "value" off of the event target. The value will be what the user inputs. But we need to give the ```input``` and ```<select>``` tags a name attribute that is equal to the name of their key on state. Our JSX will end up like this: 
+- And then we are going to add it as the function to be run in the event of an onChange to our inputs and select. You'll notice that the changeHandler is going to destructure "name" and "value" off of the event target. The value will be what the user inputs. But we need to give the ```<input>``` and ```<select>``` tags a name attribute that is equal to the name of their key on state. Our JSX will end up like this: 
 ```js
     return (
         <div>
@@ -232,11 +232,135 @@ export default Adder
         </div>
     )
 ```
-- Back in App.js, we are going to make the function that will add a character into the array on state. Ideally, we would just be receiving an object into this function, and then just pushing that object onto the end of our array. So, let's write it that way. Add this function to App.js between the constructor and the render and don't forget to bind add in the contructor.
+- Back in App.js, we are going to make the function that will add a character into the array on state. Ideally, we would just be receiving an object into this function, and then just inserting that object into our array. So, let's write it that way. Add this function to App.js between the constructor and the render and don't forget to bind add in the contructor.
 ```js
+// in the constructor 
+this.add = this.add.bind(this)
+
+//outside the constructor
   add(obj) {
     this.setState({
       characters: [...this.state.characters, obj]
     })
   }
+
+// in the render 
+<Adder add={this.add}/>
 ```
+- In Adder.js, we are going to connect the button with a function we are going to call addAndClear (later we will be using the same function to clear out our input fields). Declare the function and bind it to the class. Right now, the addAndClear function will just run this.props.add for us, which is expecting an object -- an object that should hold character information. And we are holding that character information on Adder's state. So in our addAndClear function, we are going to get that information off of state so that we can send it to this.props.add. Below is the code for addAndClear as well as what the button should look like in the render.
+```js
+// addAndClear function, don't forget to bind this in the constructor
+    addAndClear() {
+        const person = {
+            name: this.state.name,
+            house: this.state.house,
+            image: this.state.image
+        }
+        this.props.add(person)
+    }
+
+ // button in the render
+<button onClick={this.addAndClear}>add</button>
+```
+
+### Resetting the Input Fields 
+- You can see when you press the add button that our character is getting added to the list! But, our input fields still have our old info in them. What happens if you press the button again? It adds another of the same character you just did. How could we solve this? Let's think about what is happening when we click the add button. We are just adding what's on state to our array, but we are never clearing state out. So, we can call a setState inside the addAndClear function to get that information off state. Your addAndClear function should look like this now: 
+```js
+addAndClear() {
+        const person = {
+            name: this.state.name,
+            house: this.state.house,
+            image: this.state.image
+        }
+        this.props.add(person)
+        this.setState({
+            image: '',
+            name: '', 
+            house: 'Gryffindor'
+        })
+    }
+```
+- But wait, the inputs didn't clear. That's because we only cleared this information off of state. Try hitting the button again. It just shows the alt property of the image, no name, and the default of Gryffindor for the house. To get the information to clear from the actual input boxes, we can give them a "value" attribute. We will set that value equal to what's on state for each of the properties. We will want to do this for our ```<select>``` tag as well, otherwise it will display the most recently selected house name, but it will actually send "Gryffindor". So now your inputs and opening select tag should look like this: 
+```js
+<input 
+    type='text' 
+    placeholder='name' 
+    onChange={this.handleChange}
+    name='name'
+    value={this.state.name}/>
+<input 
+    type='text' 
+    placeholder='imageURL' 
+    onChange={this.handleChange}
+    name='image'
+    value={this.state.image}/>
+<select 
+    placeholder='house'
+    onChange={this.handleChange}
+    name='house'
+    value={this.state.house}>
+```
+
+## Deleting Characters 
+- App.js is holding the array of characters, so that's also where we will want to hold our delete functionality. Think about how we remove things from arrays -- usually we usee splice. And what does splice need? An index. Right now, we are just defining this function, so we can tell it to expect an index. Then, we'll worry about where to get that index later when we actually invoke the function. For now, let's just write a splice function. In our function, we are going to get the characters array off of state, make a copy of it, splice a character out of the copy and then set the copy to be the new state.characters array. Making copies of things is a good habit to get into becuase we usually don't want to mutilate our original data. So our delete function will look like the code below. Don't forget to bind it in the constructor! We will also want to pass it to the Card component since that's where the delete buttons will be. 
+```js
+// a method on our App component (outside of the constructor before the render)
+delete(i) {
+    const arr = [...this.state.characters]
+    arr.splice(i, 1)
+    this.setState({
+        characters: arr
+    })
+}
+
+// Card component inside the map inside the render
+<Card char={char} key={char.name} delete={this.delete}/>
+
+```
+
+- So now we have passed the delete function to Card. But what will we use to access that delete function? That's right, another button. We want a button on each card so that when we press a character's button, it deletes them from the array. So, let's go add that button into the Card.js component. 
+```js
+import React from 'react'
+
+function Card(props) {
+    return (
+        <div>
+            <img src={props.char.image} alt='profile'/>
+            <h2>{props.char.name}</h2>
+            <p>{props.char.house}</p>
+            <button>delete</button>
+      </div>
+    )
+}
+
+export default Card
+```
+- Now our cards look how they're supposed to, but the button doesn't do anything. We have to tell it to invoke the delete function that we passed to it when the user clicks the button. With an onClick (or onChange, etc) we have to think about whether we will be invoking the function there in the JSX. If we are going to be passing anything into the function, then we are invoking it. And we will actually need to return it from another function so that it doesn't get called when the script runs. That's the case here, since we want to pass the index to the delete function. This also means that each card will need to know it's own index, so we'll need to add some code into App.js.
+```js
+// App.js, now passing down the index of each item as well
+let mappedChars = this.state.characters.map((char, index) => {
+    return (
+    <Card char={char} index={index} key={char.name} delete={this.delete}/>
+    )
+})
+
+// Card.js 
+<button onClick={() => props.delete(props.index)}>delete</button>
+
+```
+
+## Styling
+CSS is not a part of this review, but I have styled this app (albeit lazily) because I enjoy it. If you're following along and want your app to look like mine, I'm going to note which JSX elements I gave classes to, then you can just copy the css files over to your own app. And don't forget to import the css files at the top of your components!
+
+### App.js
+Copy my App.css
+- the outermost div should have the className 'app-main'
+- the div that holds mappedChars should have the className 'card-container'
+
+### Adder.js
+Copy my Adder.css
+- the outermost div should have a className of 'adder'
+
+### Card.js
+Copy my Card.css
+- the outermost div should have a className of 'card'

@@ -23,6 +23,7 @@ class App extends Component {
     }
 
     this.add = this.add.bind(this)
+    this.delete = this.delete.bind(this)
   }
 
   add(obj) {
@@ -31,19 +32,27 @@ class App extends Component {
     })
   }
 
+  delete(i) {
+    const arr = [...this.state.characters]
+    arr.splice(i, 1)
+    this.setState({
+      characters: arr
+    })
+  }
+
 
   render() {
-    let mappedChars = this.state.characters.map(char => {
+    let mappedChars = this.state.characters.map((char, index) => {
       return (
-        <Card char={char} key={char.name}/>
+        <Card char={char} index={index} key={char.name} delete={this.delete}/>
       )
     })
 
     return (
-      <div>
+      <div className='app-main'>
         <h1>Harry Potter App</h1>
         <Adder add={this.add}/>
-        <div>{mappedChars}</div>
+        <div className='card-container'>{mappedChars}</div>
       </div>
     )
   }

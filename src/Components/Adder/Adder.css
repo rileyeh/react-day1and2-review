@@ -1,0 +1,19 @@
+.adder {
+    width: 80vw;
+    height: 100px;
+    display: flex;
+    align-items: center;
+    justify-content: space-evenly;
+}
+
+input {
+    border: none;
+    border-bottom: 2px solid white;
+    background: none;
+    color: white;
+    width: 160px;
+}
+
+::placeholder {
+    color: white;
+}

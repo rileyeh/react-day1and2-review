@@ -1,4 +1,5 @@
 import React, { Component } from 'react'
+import './Adder.css'
 
 class Adder extends Component {
     constructor(props) {
@@ -22,7 +23,12 @@ class Adder extends Component {
     }
 
     addAndClear() {
-        this.props.add(this.state)
+        const person = {
+            name: this.state.name,
+            house: this.state.house,
+            image: this.state.image
+        }
+        this.props.add(person)
         this.setState({
             image: '',
             name: '', 
@@ -32,7 +38,7 @@ class Adder extends Component {
 
     render() {
         return (
-            <div>
+            <div className='adder'>
                 <input 
                     type='text' 
                     placeholder='name' 
@@ -49,7 +55,7 @@ class Adder extends Component {
                     placeholder='house'
                     onChange={this.handleChange}
                     name='house'
-                    value={this.state.name}>
+                    value={this.state.house}>
                     <option>Gryffindor</option>
                     <option>Slytherin</option>
                     <option>Hufflepuff</option>
@@ -61,4 +67,4 @@ class Adder extends Component {
     }
 }
 
-export default Adder
+export default Adder 
